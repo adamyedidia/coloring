@@ -3,14 +3,15 @@ package main;
 import java.util.*;
 
 public class Node {
-	public Set<Integer> neighbors;
+	public HashSet<Integer> neighbors;
 	public int id;
 	
 	public int color; // color = 0 is BLANK
 	
-	public HashMap<Integer, Integer> bonusEstimate;
+	public HashMap<Integer, Double> bonusEstimate;
+	public HashMap<Integer, Double> oldBonusEstimate;
 	
-	public int NUMBER_OF_COLORS = 2; // this counts only legit colors
+	public int NUMBER_OF_COLORS = 3; // this counts only legit colors
 	
 	public int INFINITY = 100000;
 	public int NEGATIVE_INFINITY = -1 * INFINITY;
@@ -18,9 +19,12 @@ public class Node {
 	public Node(HashSet<Integer> neighbors, int id) {
 		this.neighbors = neighbors;
 		this.id = id;
-		bonusEstimate = new HashMap<Integer, Integer>();
-		for (int i=1; i<NUMBER_OF_COLORS+1; i++) {
-			bonusEstimate.put(i, 1);
+		bonusEstimate = new HashMap<Integer, Double>();
+		oldBonusEstimate = new HashMap<Integer, Double>();
+		
+		for (int i=0; i<NUMBER_OF_COLORS+1; i++) {
+			bonusEstimate.put(color, -1.0);
+			oldBonusEstimate.put(color, -1.0);
 		}
 	}
 	
@@ -38,7 +42,7 @@ public class Node {
 		}
 		
 		if (depth == 0) {
-			return bonusEstimate.get(color);
+			return oldBonusEstimate.get(color);
 		}
 		
 		// Check that the set of neighbors is not empty; if so, return base case
@@ -50,11 +54,11 @@ public class Node {
 		nodesInGraph.retainAll(neighbors);
 		if (nodesInGraph.isEmpty()) {
 			if (graph.get(id).size() == 0) {
-				System.out.println("Graph: " + graph + " Node: " + id + " Color: " + color + " Bonus: 0.0");
+//				System.out.println("Graph: " + graph + " Node: " + id + " Color: " + color + " Bonus: 0.0");
 				return 0.0;
 			}
 			else {
-				System.out.println("Graph: " + graph + " Node: " + id + " Color: " + color + " Bonus: 1.0"); 
+//				System.out.println("Graph: " + graph + " Node: " + id + " Color: " + color + " Bonus: 1.0"); 
 				return 1.0;
 			}
 		}
@@ -101,7 +105,7 @@ public class Node {
 				}	
 			}
 			
-			System.out.println("Graph: " + graph + " Node: " + id + " Color: " + color + " Bonus: " + returnValue);
+			System.out.println(" Node: " + id + " Color: " + color + " Bonus: " + returnValue);
 			
 			return returnValue;
 		}
@@ -137,6 +141,47 @@ public class Node {
 			HashMap<Integer, List<Integer>> graph) {
 
 		graph.get(nodeID).remove((Object) color);
+	}
+	
+	public void resetBonus() {
+		Iterator<Integer> newBonusIterator = bonusEstimate.keySet().iterator();
+		
+		while (newBonusIterator.hasNext()) {
+			int key = newBonusIterator.next();
+			oldBonusEstimate.put(key, bonusEstimate.get(key));
+		}
+	}
+	
+	public void reinitializeBonusOld(HashMap<Integer, List<Integer>> graph, HashMap<Integer, Node> IDsToNodes) {
+		Random rand = new Random();
+		for (int color : graph.get(id)) {
+			double initializationValue = rand.nextDouble();
+			bonusEstimate.put(color, initializationValue);
+			oldBonusEstimate.put(color, initializationValue);
+		}
+	}
+	
+	public void reinitializeBonus(HashMap<Integer, List<Integer>> graph, HashMap<Integer, Node> IDsToNodes) {
+		for (int color : graph.get(id)) {
+			double initializationValue = 1.0 - 
+					getNumberOfNeighborsWithPossibleColor(color, IDsToNodes) / NUMBER_OF_COLORS;
+			bonusEstimate.put(color, initializationValue);
+			oldBonusEstimate.put(color, initializationValue);
+		}
+	}
+	
+	// This is a double for weird reasons; I need float division in the function above.
+	// Of course it will always return integer values.
+	public double getNumberOfNeighborsWithPossibleColor(int color, HashMap<Integer, Node> IDsToNodes) {
+		int counter = 0;
+		
+		for (int neighborID : neighbors) {
+			Node neighbor = IDsToNodes.get(neighborID);
+			if (neighbor.bonusEstimate.containsKey(color))
+				counter++;
+		}
+		
+		return counter;
 	}
 	
     public static void main(String[] args) {
