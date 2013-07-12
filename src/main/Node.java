@@ -33,7 +33,9 @@ public class Node {
 	// node (not counting the blank color)
 	public double approximateBonus(HashMap<Integer, Node> IDsToNodes, HashMap<Integer, List<Integer>> graph,
 			int color, int depth) { 
-				
+		
+		Random rand = new Random();
+						
 		List<Integer> listOfPossibleColors = graph.get(id);
 		
 		if (!listOfPossibleColors.contains(color)) {
@@ -41,6 +43,7 @@ public class Node {
 					"of possible colors of node " + id + "!");
 		}
 		
+		// The below is a REVERSED probability; this is intended
 		if (depth == 0) {
 			return oldBonusEstimate.get(color);
 		}

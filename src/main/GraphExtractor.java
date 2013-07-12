@@ -97,7 +97,7 @@ public class GraphExtractor {
 		
 		HashMap<Integer, Double> nodeIDtoTotalBlankNumSame = new HashMap<Integer, Double>();
 		HashMap<Integer, Integer> nodeIDtoNumColoringsSame = new HashMap<Integer, Integer>();
-
+		
 		HashMap<Integer, Double> nodeIDtoTotalBlankNumDiff = new HashMap<Integer, Double>();
 		HashMap<Integer, Integer> nodeIDtoNumColoringsDiff = new HashMap<Integer, Integer>();
 		
